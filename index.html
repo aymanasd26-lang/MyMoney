@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"><head><meta charset="utf-8"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0e7c7b"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>My Financial Life</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f5f3;--card:#fff;--ink:#12263a;--mut:#5f7080;--ac:#0e7c7b;--gd:#b8892b;--rd:#b3372f;--ln:#dbe3df;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1a24;--card:#16263460;--ink:#e7eef2;--mut:#93a7b5;--ac:#3fc1bd;--gd:#e0b552;--rd:#ef7d74;--ln:#27394a}}
+*{box-sizing:border-box}html,body{margin:0}body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',Tahoma,sans-serif;font-size:15px;padding-bottom:84px}
+main{max-width:980px;margin:auto;padding:14px}h2{margin:6px 0 12px}h3{margin:0 0 8px;font-size:15px;color:var(--mut)}
+.g{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.c{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px;margin-bottom:10px}
+.big{font-size:22px;font-weight:700}.sm{font-size:12px;color:var(--mut)}.hero{border-color:var(--ac);border-width:2px}.hero .big{font-size:30px}
+.bad{color:var(--rd)}.ok{color:var(--ac)}nav{position:fixed;bottom:0;inset-inline:0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(8px);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:11px 2px;font:inherit;font-size:12px}nav .on{color:var(--ac);font-weight:700;box-shadow:inset 0 3px var(--ac)}
+@media(min-width:800px){nav{inset:0 auto 0 0;width:150px;flex-direction:column;justify-content:flex-start;border-top:0;border-inline-end:1px solid var(--ln)}main{margin-inline-start:170px;max-width:none;padding-inline-start:30px}nav button{padding:14px}}
+button,input,select{font:inherit;color:inherit}input,select{background:transparent;border:1px solid var(--ln);border-radius:8px;padding:7px;width:100%}
+.b{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}.b2{background:none;border:1px solid var(--ln);border-radius:8px;padding:6px 10px;cursor:pointer}.rd{color:var(--rd)}
+#fab{position:fixed;bottom:76px;inset-inline-end:14px;width:54px;height:54px;border-radius:50%;font-size:28px;z-index:6;background:var(--gd);color:#fff;border:0;box-shadow:0 4px 14px #0004}
+.t{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}td,th{padding:6px;border-bottom:1px solid var(--ln);text-align:start;font-size:13px}td input,td select{min-width:70px}
+.bar{height:9px;background:var(--ln);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+#m{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:9}#m>div{background:var(--bg);border-radius:14px;padding:16px;width:min(440px,94vw);max-height:90vh;overflow:auto}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px}.w{background:#b3372f18;border-inline-start:4px solid var(--rd);padding:8px;border-radius:6px;margin:6px 0}.i{background:#0e7c7b14;border-inline-start:4px solid var(--ac);padding:8px;border-radius:6px;margin:6px 0}
+</style></head><body><main id="app"></main><button id="fab" onclick="quick()" aria-label="Add">+</button><nav id="nav"></nav><div id="m"></div>
+<script>
+const NAV=[['d','Dashboard'],['t','Transactions'],['a','Assets'],['w','Marriage'],['r','Reports'],['s','Settings']];
+const IC=['Monthly salary','Annual bonus','Employee shares','Investment returns','Freelance','Gifts','Other income'];
+const EC=['Food & groceries','Transportation','Household contribution','Personal shopping','Healthcare','Entertainment','Subscriptions','Education','Family expenses','Wedding preparation','Investment expenses','Other expenses'];
+const AC={bank:'Bank (cash)',gold:'Gold',thndr:'Thndr'};
+const K='mfl_v1',td=()=>new Date().toISOString().slice(0,10),uid=()=>Math.random().toString(36).slice(2,9);
+const F=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'EGP',maximumFractionDigits:0}).format(n||0);
+const P=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n||0)+'%';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function demo(){const W=(n,b,p,pr,party='me')=>({id:uid(),n,b,a:0,p:0,due:'',party,st:'Planned',pr});
+return{v:1,set:{salary:16000,exp:7000,save:9000,mAlloc:7000,iAlloc:2000,emT:50000,eng:'',wed:'',risk:'Moderate',horizon:'3–5 years or more'},
+bank0:105000,liab:0,env:{e:50000,m:45000},tx:[],log:[],snaps:{},
+gold:[{id:uid(),n:'24K gold bars (3×2.5 g)',g:7.5,k:24,cost:0,val:46549,kind:'Bars'},{id:uid(),n:'Gold jewelry',g:7.22,k:21,cost:0,val:44811,kind:'Jewelry'}],
+gp:91360,thndr:[['TMGH','Stock',9574],['ORAS','Stock',8910],['MCRO','Stock',2537],['GBCO','Stock',629],['BWA','Fund',34186],['MTF','Fund',12957],['AZG','Fund',2956],['BMM','Fund',742],['BSB','Fund',179],['Rounding diff','Cash',1]].map(x=>({id:uid(),sym:x[0],type:x[1],val:x[2],cost:0,risk:'Moderate'})),
+adj:{bank:0,gold:0,thndr:0},
+inc:[{id:uid(),n:'Extra annual income 1',amt:6000,exp:'',got:''},{id:uid(),n:'Extra annual income 2',amt:20000,exp:'',got:''}],
+wed:[W('Gold & engagement jewelry',50000,0,'High'),W('Bedroom furniture',55000,0,'High'),W('Mattresses',10000,0,'Medium'),W('Reception & living room',30000,0,'Medium'),W('Dining furniture',12000,0,'Medium'),W('Electrical finishing & lighting',12000,0,'High'),W('Wedding hall',65000,0,'High'),W('Engagement & photography',11000,0,'Medium'),W('Clothing & miscellaneous',10000,0,'Low'),W('Transport & installation',8000,0,'Low'),W('Emergency contingency',12000,0,'Medium'),W('Electrical appliances (bride)',0,0,'Medium','bride')]};}
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}S=S||demo();let V='d',PER='all',Q='',FA='',FC='';
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+function logA(t){S.log.unshift({d:new Date().toLocaleString('en-US'),t});S.log=S.log.slice(0,100)}
+// ---- calculations (pure) ----
+function calc(s){const ad={bank:s.bank0+s.adj.bank,gold:s.adj.gold,thndr:s.adj.thndr};let sv={e:0,m:0,i:0};
+s.tx.forEach(t=>{const a=+t.amount;if(t.type==='income'&&t.status!=='expected'){ad[t.acct||'bank']+=a}
+else if(t.type==='expense'){ad[t.acct||'bank']-=a}else if(t.type==='transfer'&&t.from!==t.to){ad[t.from]-=a;ad[t.to]+=a}else if(t.type==='saving'){sv[t.to]+=a}});
+const goldV=s.gold.reduce((x,g)=>x+(+g.val||0),0),thV=s.thndr.reduce((x,h)=>x+(+h.val||0),0);
+const acc={bank:ad.bank,gold:goldV+ad.gold,thndr:thV+ad.thndr};const assets=acc.bank+acc.gold+acc.thndr;
+const em=s.env.e+sv.e,mr=s.env.m+sv.m;return{acc,assets,liab:+s.liab||0,net:assets-(+s.liab||0),em,mr,flex:acc.bank-em-mr,inv:sv.i}}
+const inR=(d,k)=>{const n=new Date(),m=n.toISOString().slice(0,7);if(k==='all')return true;if(k==='m')return d.slice(0,7)===m;
+if(k==='p'){const x=new Date(n.getFullYear(),n.getMonth()-1,1).toISOString().slice(0,7);return d.slice(0,7)===x}
+if(k==='3'||k==='6'){return d>=new Date(n.getFullYear(),n.getMonth()-(+k-1),1).toISOString().slice(0,10)}
+if(k==='y')return d.slice(0,4)===m.slice(0,4);return true};
+const sum=(a,f)=>a.reduce((x,y)=>x+f(y),0);
+const flows=(txs)=>({inc:sum(txs.filter(t=>t.type==='income'&&t.status!=='expected'),t=>+t.amount),exp:sum(txs.filter(t=>t.type==='expense'),t=>+t.amount)});
+function months(n){const r=[],d=new Date();for(let i=n-1;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);r.push(x.toISOString().slice(0,7))}return r}
+function monthly(){return months(6).map(m=>({m,...flows(S.tx.filter(t=>t.date.slice(0,7)===m))}))}
+function wedTot(){const w=S.wed;const plan=sum(w,x=>+x.b),act=sum(w,x=>Math.max(+x.a,+x.b)),paid=sum(w,x=>+x.p);
+const mine=sum(w,x=>x.party==='me'?Math.max(+x.a,+x.b):x.party==='shared'?Math.max(+x.a,+x.b)/2:0);return{plan,act,paid,mine,bride:act-mine,rem:act-paid}}
+// ---- charts ----
+function bars(rows,ks,cols){const mx=Math.max(1,...rows.flatMap(r=>ks.map(k=>Math.abs(r[k]))));const w=100/rows.length;
+return `<svg viewBox="0 0 300 130" style="width:100%">${rows.map((r,i)=>ks.map((k,j)=>{const h=Math.abs(r[k])/mx*95;return `<rect x="${i*50+6+j*20}" y="${105-h}" width="18" height="${h}" fill="${cols[j]}" rx="2"><title>${r.m}: ${F(r[k])}</title></rect>`}).join('')+`<text x="${i*50+25}" y="122" font-size="9" text-anchor="middle" fill="currentColor">${r.m.slice(5)}</text>`).join('')}</svg>`}
+function line(pts){if(pts.length<2)return'<div class="sm">Needs more than one month of data; a monthly snapshot is saved automatically.</div>';const mx=Math.max(...pts.map(p=>p[1])),mn=Math.min(...pts.map(p=>p[1])),r=mx-mn||1;
+return `<svg viewBox="0 0 300 100" style="width:100%"><polyline fill="none" stroke="var(--ac)" stroke-width="2.5" points="${pts.map((p,i)=>`${10+i*280/(pts.length-1)},${90-(p[1]-mn)/r*75}`).join(' ')}"/></svg>`}
+function pie(items){const t=sum(items,x=>x[1])||1;return items.map((x,i)=>`<div style="margin:6px 0"><div class="sm" style="display:flex;justify-content:space-between"><span>${esc(x[0])}</span><span>${F(x[1])} · ${P(x[1]/t*100)}</span></div><div class="bar"><i style="width:${x[1]/t*100}%;background:${['var(--ac)','var(--gd)','#5b7fa6','#8a6bb0','#c47a5a'][i%5]}"></i></div></div>`).join('')}
+// ---- views ----
+const perSel=()=>`<select onchange="PER=this.value;go()" style="width:auto">${[['m','This month'],['p','Last month'],['3','3 months'],['6','6 months'],['y','This year'],['all','All time']].map(o=>`<option value="${o[0]}" ${PER===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
+function vD(){const c=calc(S),f=flows(S.tx.filter(t=>inR(t.date,PER))),w=wedTot();const cd=(a,b,cl='')=>`<div class="c ${cl}"><div class="sm">${a}</div><div class="big">${b}</div></div>`;
+const sn=Object.entries(S.snaps).sort().map(x=>[x[0],x[1]]);
+return `<h2>My Financial Life ${perSel()}</h2>${cd('Net worth',F(c.net),'hero')}<div class="g">${cd('Bank balance',F(c.acc.bank))}${cd('Gold value',F(c.acc.gold))}${cd('Thndr portfolio',F(c.acc.thndr))}${cd('Income (received)',F(f.inc))}${cd('Expenses',F(f.exp))}${cd('Savings',F(f.inc-f.exp))}${cd('Marriage savings',F(c.mr))}${cd('Emergency fund',F(c.em))}</div>
+<div class="g"><div class="c"><h3>Net worth over time</h3>${line(sn)}</div><div class="c"><h3>Income vs expenses (last 6 months)</h3>${bars(monthly(),['inc','exp'],['var(--ac)','var(--gd)'])}</div>
+<div class="c"><h3>Asset allocation</h3>${pie([['Cash',c.acc.bank],['Gold',c.acc.gold],['Investment',c.acc.thndr]])}</div><div class="c"><h3>Portfolio allocation</h3>${pie(S.thndr.map(h=>[h.sym,+h.val]))}</div>
+<div class="c"><h3>Wedding budget progress</h3><div class="big">${P(w.paid/(w.act||1)*100)}</div><div class="bar"><i style="width:${Math.min(100,w.paid/(w.act||1)*100)}%"></i></div><div class="sm">Paid ${F(w.paid)} of ${F(w.act)}</div></div></div>`}
+function vT(){let l=S.tx.filter(t=>inR(t.date,PER)&&(!FA||t.acct===FA||t.from===FA||t.to===FA)&&(!FC||t.cat===FC)&&(!Q||(t.desc+t.cat+(t.notes||'')).includes(Q))).sort((a,b)=>b.date.localeCompare(a.date));
+return `<h2>Transactions ${perSel()}</h2><div class="g"><input placeholder="Search" value="${esc(Q)}" onchange="Q=this.value;go()"><select onchange="FA=this.value;go()"><option value="">All accounts</option>${Object.entries(AC).map(a=>`<option value="${a[0]}" ${FA===a[0]?'selected':''}>${a[1]}</option>`).join('')}</select><select onchange="FC=this.value;go()"><option value="">All categories</option>${[...IC,...EC,...(S.cust||[])].map(c=>`<option ${FC===c?'selected':''}>${c}</option>`).join('')}</select></div>
+<div class="c t"><table><tr><th>Date<th>Type<th>Category<th>Description<th>Amount<th></tr>${l.map(t=>`<tr onclick="quick('${t.id}')" style="cursor:pointer"><td>${t.date}<td>${{income:'Income',expense:'Expense',transfer:'Transfer',saving:'Saving'}[t.type]}${t.status==='expected'?' (Expected)':''}<td>${esc(t.cat||'')}<td>${esc(t.desc)}<td class="${t.type==='expense'?'bad':t.type==='income'?'ok':''}">${F(t.amount)}</tr>`).join('')||'<tr><td colspan=5>No transactions yet. Tap + to add your first one.</tr>'}</table></div><button class="b2" onclick="csv()">Export CSV</button>`}
+function inp(o,k,ty='text'){return `<input type="${ty}" value="${esc(o[k])}" onchange="ed('${o.id}','${k}',this.value,'${ty}')">`}
+function ed(id,k,v,ty){const o=[...S.gold,...S.thndr,...S.wed,...S.inc].find(x=>x.id===id);const old=o[k];o[k]=ty==='number'?Math.max(0,+v||0):v;logA(`Edited ${o.n||o.sym}: ${k} from ${old} to ${o[k]}`);save();snap();go()}
+function vA(){const c=calc(S),gt=sum(S.gold,g=>+g.g);
+return `<h2>Assets & investments</h2><div class="g"><div class="c"><div class="sm">Total assets</div><div class="big">${F(c.assets)}</div></div><div class="c"><div class="sm">Liabilities</div><div class="big">${F(c.liab)}</div></div><div class="c hero"><div class="sm">Net worth</div><div class="big">${F(c.net)}</div></div></div>
+<div class="c"><h3>Bank</h3><div class="big">${F(c.acc.bank)}</div><div class="sm">Available after emergency & marriage: ${F(c.flex)}</div><button class="b2" onclick="setBank()">Adjust bank balance</button></div>
+<div class="c t"><h3>Gold — ${gt.toFixed(2)} g</h3><table><tr><th>Item<th>Type<th>Grams<th>Karat<th>Purchase price<th>Current value<th></tr>${S.gold.map(g=>`<tr><td>${inp(g,'n')}<td>${inp(g,'kind')}<td>${inp(g,'g','number')}<td>${inp(g,'k','number')}<td>${inp(g,'cost','number')}<td>${inp(g,'val','number')}<td><button class="b2 rd" onclick="del('gold','${g.id}')">Delete</button></tr>`).join('')}</table><button class="b2" onclick="S.gold.push({id:uid(),n:'New item',g:0,k:24,cost:0,val:0,kind:'Bars'});save();go()">+ Gold item</button>
+<div class="sm">Unrealized gain/loss = value − purchase price (where a purchase price is entered).</div></div>
+<div class="c t"><h3>Thndr portfolio</h3><table><tr><th>Symbol<th>Type<th>Market value<th>Cost<th>Risk<th>Performance<th></tr>${S.thndr.map(h=>`<tr><td>${inp(h,'sym')}<td>${inp(h,'type')}<td>${inp(h,'val','number')}<td>${inp(h,'cost','number')}<td>${inp(h,'risk')}<td>${h.cost?F(h.val-h.cost):'—'}<td><button class="b2 rd" onclick="del('thndr','${h.id}')">Delete</button></tr>`).join('')}</table>
+<div class="sm">Total ${F(sum(S.thndr,h=>+h.val))} — values are a manual snapshot, not live prices.</div><button class="b2" onclick="S.thndr.push({id:uid(),sym:'New',type:'Stock',val:0,cost:0,risk:'Moderate'});save();go()">+ Stock/Fund</button></div>
+<div class="c"><h3>Allocation</h3>${pie(S.thndr.map(h=>[h.sym,+h.val]))}</div>`}
+function del(k,id){if(!confirm('Delete this item?'))return;S[k]=S[k].filter(x=>x.id!==id);logA('Deleted item from '+k);save();snap();go()}
+function setBank(){const c=calc(S),v=prompt('Actual current bank balance:',c.acc.bank);if(v===null)return;const n=+v;if(!(n>=0)||v.trim()==='')return alert('Enter a valid number');S.adj.bank+=n-c.acc.bank;logA(`Bank balance adjusted to ${n}`);save();snap();go()}
+function vW(){const t=wedTot(),c=calc(S),need=Math.max(0,t.mine-c.mr),mo=S.set.mAlloc>0?Math.ceil(need/S.set.mAlloc):null;let eta='—';if(mo!==null){const d=new Date();d.setMonth(d.getMonth()+mo);eta=d.toLocaleDateString('en-US',{year:'numeric',month:'long'})}
+return `<h2>Marriage planner</h2><div class="g"><div class="c"><div class="sm">Planned budget</div><div class="big">${F(t.plan)}</div></div><div class="c"><div class="sm">My responsibility</div><div class="big">${F(t.mine)}</div></div><div class="c"><div class="sm">Bride's responsibility (unconfirmed)</div><div class="big">${F(t.bride)}</div></div><div class="c"><div class="sm">Saved for marriage</div><div class="big">${F(c.mr)}</div></div><div class="c"><div class="sm">Still needed from me</div><div class="big">${F(need)}</div></div><div class="c"><div class="sm">Estimated affordability date</div><div class="big">${eta}</div></div></div>
+<div class="sm">No wedding date is confirmed; estimate = remaining ÷ monthly marriage allocation (${F(S.set.mAlloc)}). The bride's contribution is never counted as my assets.</div>
+<div class="c t"><table><tr><th>Item<th>Planned<th>Actual<th>Paid<th>Remaining<th>Due date<th>Responsible<th>Status<th>Priority<th></tr>${S.wed.map(x=>{const r=Math.max(+x.a,+x.b)-x.p;return `<tr><td>${inp(x,'n')}<td>${inp(x,'b','number')}<td>${inp(x,'a','number')}<td>${inp(x,'p','number')}<td class="${r<0?'bad':''}">${F(r)}<td>${inp(x,'due','date')}<td><select onchange="ed('${x.id}','party',this.value)">${[['me','Me'],['bride','Bride'],['shared','Shared']].map(o=>`<option value="${o[0]}" ${x.party===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select><td><select onchange="ed('${x.id}','st',this.value)">${['Planned','In progress','Purchased','Paid'].map(o=>`<option ${x.st===o?'selected':''}>${o}</option>`).join('')}</select><td>${inp(x,'pr')}<td><button class="b2 rd" onclick="del('wed','${x.id}')">Delete</button></tr>`}).join('')}</table></div>
+<button class="b2" onclick="S.wed.push({id:uid(),n:'New item',b:0,a:0,p:0,due:'',party:'me',st:'Planned',pr:'Medium'});save();go()">+ Item</button>
+<div class="sm">Paid here is manual tracking of the plan; record the actual cash outflow as an expense in the "Wedding preparation" category so your balance updates.</div>`}
+function vR(){const c=calc(S),m=monthly().filter(x=>x.inc||x.exp),n=Math.max(1,m.length),ae=sum(m,x=>x.exp)/n,ai=sum(m,x=>x.inc)/n,w=wedTot(),I=[],W=[];
+const cats={};S.tx.filter(t=>t.type==='expense').forEach(t=>cats[t.cat]=(cats[t.cat]||0)+ +t.amount);const top=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+const cm=flows(S.tx.filter(t=>inR(t.date,'m'))),usual=S.set.exp;const ex=ae||usual,mo=c.em/(ex||1);
+I.push(`Average monthly expenses: ${F(ae)} (from ${m.length} recorded months)`);I.push(`Average savings: ${F(ai-ae)} — savings rate ${ai?P((ai-ae)/ai*100):'—'}`);
+I.push(`Emergency coverage: ${c.em} ÷ ${Math.round(ex)} = ${mo.toFixed(1)} months`);if(top[0])I.push('Largest spending category: '+top[0][0]+' ('+F(top[0][1])+')');
+if(cm.exp>S.set.exp*1.15)W.push(`This month's spending ${F(cm.exp)} exceeds your usual (${F(S.set.exp)})`);if(w.act>w.plan&&w.plan>0)W.push('Actual wedding cost exceeds the planned budget');
+if(c.acc.bank<S.set.exp*2)W.push('Bank balance is below two months of expenses');if(c.em<S.set.emT)W.push(`Emergency fund (${F(c.em)}) is below target (${F(S.set.emT)})`);
+if(c.acc.thndr>c.acc.bank&&S.wed.some(x=>x.due&&x.st!=='Paid'&&x.due<new Date(Date.now()+1.6e10).toISOString().slice(0,10)))W.push('Note: wedding payments are due within ~6 months while most of your liquidity is in volatile investments');
+const un=sum(S.thndr,h=>h.cost?h.val-h.cost:0);
+return `<h2>Reports & insights</h2>${W.map(x=>`<div class="w">${x}</div>`).join('')}${I.map(x=>`<div class="i">${x}</div>`).join('')}<div class="c"><h3>Monthly income & expenses</h3>${bars(monthly(),['inc','exp'],['var(--ac)','var(--gd)'])}</div><div class="c"><h3>Top spending categories</h3>${pie(top.slice(0,5))||'—'}</div>
+<div class="c"><h3>Unrealized gains (where cost is entered)</h3><div class="big">${F(un)}</div></div><div class="sm">This is calculated information, not a recommendation to buy or sell, and not a guarantee of any return.</div>`}
+function vS(){const s=S.set,fl=(l,k)=>`<div><label>${l}</label><input type="number" min="0" value="${s[k]}" onchange="S.set.${k}=Math.max(0,+this.value||0);logA('Edited setting ${k}');save();go()"></div>`;
+return `<h2>Settings</h2><div class="c g">${fl('Monthly salary','salary')}${fl('Usual monthly expenses','exp')}${fl('Monthly saving capacity','save')}${fl('Monthly marriage allocation','mAlloc')}${fl('Monthly investment allocation','iAlloc')}${fl('Emergency fund target','emT')}<div><label>Engagement date (optional)</label><input type="date" value="${s.eng}" onchange="S.set.eng=this.value;save()"></div><div><label>Wedding date (optional)</label><input type="date" value="${s.wed}" onchange="S.set.wed=this.value;save()"></div><div><label>Liabilities (debts)</label><input type="number" min="0" value="${S.liab}" onchange="S.liab=Math.max(0,+this.value||0);save();go()"></div></div>
+<div class="c t"><h3>Additional annual income sources</h3><table><tr><th>Name<th>Amount<th>Expected date<th>Actual received date<th></tr>${S.inc.map(i=>`<tr><td>${inp(i,'n')}<td>${inp(i,'amt','number')}<td>${inp(i,'exp','date')}<td>${inp(i,'got','date')}<td>${i.got?'':`<button class="b2" onclick="recv('${i.id}')">Mark received</button>`}</tr>`).join('')}</table><div class="sm">Expected income is not counted until you tap "Mark received".</div></div>
+<div class="c"><h3>Data</h3><button class="b" onclick="bk()">JSON backup</button> <label class="b2" style="display:inline-block">Restore<input type="file" accept=".json" hidden onchange="rs(this)"></label> <button class="b2" onclick="csv()">CSV</button> <button class="b2 rd" onclick="if(confirm('Reset to demo data? Everything will be erased.')){S=demo();save();snap();go()}">Reset</button></div>
+<div class="c"><button class="b2" onclick="tests()">Run calculation tests</button><div id="tr"></div></div>
+<div class="c"><h3>Audit trail</h3>${S.log.slice(0,25).map(l=>`<div class="sm">${l.d} — ${esc(l.t)}</div>`).join('')||'<div class="sm">No changes yet.</div>'}</div>
+<div class="sm">Assumptions: gold bar value = 91,360 split by weight; jewelry assumed 21K (not specified). Thndr holdings total 72,670 + 1 EGP rounding = 72,671. Marriage and emergency savings are allocations inside the bank balance, not extra assets.</div>`}
+function recv(id){const i=S.inc.find(x=>x.id===id);S.tx.push({id:uid(),type:'income',amount:i.amt,cat:'Annual bonus',date:td(),desc:i.n,status:'received',acct:'bank',rec:'annual'});i.got=td();logA('Received '+i.n);save();snap();go()}
+// ---- forms ----
+function quick(id){const t=id?S.tx.find(x=>x.id===id):{type:'expense',amount:'',cat:'',date:td(),desc:'',status:'received',acct:'bank',from:'bank',to:'thndr',rec:'',notes:''};
+const sel=(n,o)=>`<select id="${n}">${o.map(x=>`<option value="${x[0]}" ${t[n]===x[0]?'selected':''}>${x[1]}</option>`).join('')}</select>`;const ac=Object.entries(AC),cats=[...IC,...EC,...(S.cust||[])];
+$m(`<h3>${id?'Edit':'Add'} transaction</h3><label>Type</label>${sel('type',[['expense','Expense'],['income','Income'],['transfer','Transfer between accounts'],['saving','Saving (allocation)']])}<label>Amount (EGP)</label><input id="amount" type="number" min="0" step="any" value="${t.amount}"><label>Category (or type a new one)</label><input id="cat" list="cl" value="${esc(t.cat)}"><datalist id="cl">${cats.map(c=>`<option>${c}</option>`).join('')}</datalist>
+<label>Date</label><input id="date" type="date" value="${t.date}"><label>Description</label><input id="desc" value="${esc(t.desc)}"><label>Account / from</label><select id="acct">${ac.map(x=>`<option value="${x[0]}" ${(t.acct||t.from)===x[0]?'selected':''}>${x[1]}</option>`).join('')}</select><label>To (transfer) / saving destination</label><select id="to">${[...ac,['m','Marriage savings'],['e','Emergency fund'],['i','Investment']].map(x=>`<option value="${x[0]}" ${t.to===x[0]?'selected':''}>${x[1]}</option>`).join('')}</select><label>Status</label>${sel('status',[['received','Actual / received'],['expected','Expected']])}<label>Notes</label><input id="notes" value="${esc(t.notes||'')}">
+<div style="margin-top:12px;display:flex;gap:8px"><button class="b" onclick="saveTx('${id||''}')">Save</button><button class="b2" onclick="$m()">Cancel</button>${id?`<button class="b2 rd" onclick="delTx('${id}')">Delete</button>`:''}</div>`)}
+function saveTx(id){const g=k=>document.getElementById(k)?.value,type=g('type'),a=+g('amount'),o={id:id||uid(),type,amount:a,cat:g('cat').trim(),date:g('date'),desc:g('desc').trim(),status:g('status'),notes:g('notes')};
+if(!(a>0))return alert('Amount must be greater than zero');if(!o.date)return alert('Date is required');
+if(type==='transfer'){o.from=g('acct');o.to=g('to');if(!AC[o.to]||o.from===o.to)return alert('Choose two different accounts for a transfer')}else if(type==='saving'){if(!['m','e','i'].includes(g('to')))return alert('Choose a saving destination');o.to=g('to')}else{o.acct=g('acct')||'bank';if(!o.cat)return alert('Choose a category');if(type==='expense')o.status='received'}
+if(o.cat&&![...IC,...EC,...(S.cust||[])].includes(o.cat)&&type!=='transfer'&&type!=='saving'){(S.cust=S.cust||[]).push(o.cat)}
+const i=S.tx.findIndex(x=>x.id===o.id);if(i>=0)S.tx[i]=o;else S.tx.push(o);logA((i>=0?'Edited':'Added')+` transaction ${type} ${a}`);save();snap();$m();go()}
+function delTx(id){if(!confirm('Delete this transaction? All balances will update automatically.'))return;S.tx=S.tx.filter(x=>x.id!==id);logA('Deleted transaction');save();snap();$m();go()}
+function $m(h){const m=document.getElementById('m');if(!h){m.style.display='none';m.innerHTML='';return}m.innerHTML='<div>'+h+'</div>';m.style.display='flex'}
+// ---- data ----
+function csv(){const r=[['Date','Type','Category','Description','Amount','Account','Status','Notes'],...S.tx.map(t=>[t.date,t.type,t.cat||'',t.desc,t.amount,t.acct||t.from+'>'+t.to,t.status,t.notes||''])];dl('\ufeff'+r.map(x=>x.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'transactions.csv','text/csv')}
+function bk(){dl(JSON.stringify(S,null,1),'financial-backup.json','application/json')}
+function dl(t,n,ty){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:ty}));a.download=n;a.click()}
+function rs(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.tx||!d.set||!d.gold||!d.thndr)throw 0;if(!confirm('Replace current data with this backup?'))return;S=d;save();go()}catch(e){alert('Invalid file')}})}
+function snap(){S.snaps[td().slice(0,7)]=calc(S).net;save()}
+function tests(){const r=[],ok=(n,c)=>r.push((c?'✅ ':'❌ ')+n),D=demo(),b=calc(D);
+ok('Initial net worth = 269,031',b.net===269031);ok('Gold = 91,360',b.acc.gold===91360);ok('Thndr = 72,671',b.acc.thndr===72671);ok('Gold weight 14.72',Math.abs(sum(D.gold,g=>g.g)-14.72)<1e-9);
+const x=JSON.parse(JSON.stringify(D));x.tx.push({type:'transfer',from:'bank',to:'thndr',amount:5000});const c1=calc(x);ok('Transfer does not change net worth',c1.net===b.net&&c1.acc.bank===100000&&c1.acc.thndr===77671);
+x.tx.push({type:'expense',amount:1000,acct:'bank'});ok('Expense lowers net worth',calc(x).net===b.net-1000);
+x.tx.push({type:'income',amount:6000,status:'expected',acct:'bank'});ok('Expected income is not counted',calc(x).net===b.net-1000);
+x.tx.pop();x.tx.pop();ok('Deleting a transaction restores the balance',calc(x).net===b.net);x.tx.push({type:'saving',to:'m',amount:7000});ok('Saving does not add assets',calc(x).net===b.net&&calc(x).mr===52000);
+ok('Total = sum of accounts',b.assets===b.acc.bank+b.acc.gold+b.acc.thndr);const w=wedTot();ok('Initial wedding budget = 275,000',w.plan===275000);
+document.getElementById('tr').innerHTML=r.map(l=>`<div>${l}</div>`).join('')}
+// ---- shell ----
+function go(){document.getElementById('nav').innerHTML=NAV.map(n=>`<button class="${V===n[0]?'on':''}" onclick="V='${n[0]}';go()">${n[1]}</button>`).join('');document.getElementById('app').innerHTML={d:vD,t:vT,a:vA,w:vW,r:vR,s:vS}[V]()}
+snap();go();
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>
